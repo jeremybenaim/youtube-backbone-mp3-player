@@ -92,6 +92,14 @@
 
       this.model.clear().set(self.model.defaults);
 
+      /* Clear previous event listener */
+      if (this.$('audio')) {
+        var $audio = this.$('audio');
+        $audio.off('canplay');
+        $audio.off('timeupdate');
+        $audio.off('ended');
+      }
+
       self.$el.removeClass('playing')
         .find('h1 .title').text('nothing to play :(').end()
         .find('h1 .timer').text('');
@@ -116,10 +124,6 @@
           audio = $audio.context,
           url = 'http://localhost:3000/yt/'+model.id+'.mp3',
           timerValue, minutes, seconds, currentTime;
-
-      /* Clear previous event listener */
-      $audio.off('canplay', play);
-      $audio.off('timeupdate', updateTimer);
 
       $title.text('Loading ...');
 
