@@ -1,13 +1,21 @@
 ## Prerequisites
 
-Make sure you have [ffmpeg](https://www.ffmpeg.org/) installed on your system
+Make sure you have [ffmpeg](https://www.ffmpeg.org/) installed on your system for stream conversion, and [bower](http://bower.io/) to install front-end packages.
 
 ## Install
 
-    $ npm install
+First, backend dependencies
+
+    npm install
+
+Then, frontend dependencies
+
+    bower install
 
 ## Run
     
-    $ npm start
+    npm start
 
-## [Dance](http://i161.photobucket.com/albums/t222/Celtic_Maiden/gifs/troll-dance.gif)
+## Dance
+
+![troll dance](http://www.sherv.net/cm/emoticons/trollface/rapper-dancing-troll-smiley-emoticon.gif)
