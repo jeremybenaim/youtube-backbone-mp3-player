@@ -70,11 +70,11 @@
       JB.on('track:click', function(model){
         if (self.model.id === model.id) {
           self.togglePlayPause();
-        } else { 
-          $('.player').removeClass('playing');
-          self.$el.find('h1 .title').text('Loading...');
-          self.$el.find('h1 .timer').text('');
-          self.playTrack(model);
+        } else {
+          self.initPlayer();
+          self.playTrack(model, function(){
+            self.$el.addClass('loaded');
+          });
         }
       });
       JB.on('keyboard:spacebar', function() {
@@ -89,10 +89,12 @@
     },
     initPlayer: function () {
       var self = this;
+
       this.model.clear().set(self.model.defaults);
-      self.$el.find('h1 .title').text('nothing to play :(');
-      self.$el.find('h1 .timer').text('');
-      $('.player').removeClass('playing');
+
+      self.$el.removeClass('playing')
+        .find('h1 .title').text('nothing to play :(').end()
+        .find('h1 .timer').text('');
     },
     togglePlayPause: function(){
       var audio = $('audio')[0] || null;
@@ -104,43 +106,50 @@
       } else {
         window.utils.audio.smoothPause(audio, 200);
       }
-      $('.player').toggleClass('playing');
+      this.$el.toggleClass('playing');
     },
-    playTrack: function (model) {
-      var self = this;
-
-      var $audio = this.findOrCreateAudioElement(),
+    playTrack: function (model, callback) {
+      var self = this,
+          $title =self.$el.find('h1 .title'),
+          $timer = self.$el.find('h1 .timer'),
+          $audio = this.findOrCreateAudioElement(),
           audio = $audio.context,
-          url = 'http://localhost:3000/yt/'+model.id+'.mp3';
+          url = 'http://localhost:3000/yt/'+model.id+'.mp3',
+          timerValue, minutes, seconds, currentTime;
 
       /* Clear previous event listener */
       $audio.off('canplay', play);
       $audio.off('timeupdate', updateTimer);
 
+      $title.text('Loading ...');
+
       /* Set mp3 url to start loading it */
       audio.autoplay = true;
       audio.src = url;
-      
-      var play = function () {
-        self.$el.find('h1 .title').text(model.title);
+
+      function play () {
+        $title.text(model.title);
         self.$el.addClass('playing');
         JB.trigger('player:play', model);
-      };
-      var updateTimer = function () {
-        var minutes = Math.round(audio.currentTime/60),
-            seconds = Math.round(audio.currentTime%60);
+      }
+      function updateTimer () {
+        currentTime = audio.currentTime;
+        minutes = Math.round(currentTime/60);
+        seconds = Math.round(currentTime%60);
 
-        var timer = (minutes<10 ? '0' + minutes : minutes) + ':' + (seconds<10 ? '0' + seconds : seconds);
+        timerValue = (minutes<10 ? '0' + minutes : minutes) + ':' + (seconds<10 ? '0' + seconds : seconds);
         
-        self.$el.find('h1 .timer').text('[' + timer + ']');
-      };
-      var reinit = function () {
+        $timer.text('[' + timerValue + ']');
+      }
+      function reinit () {
         self.initPlayer();
-      };
+      }
 
       $audio.on('canplay', play);
       $audio.on('timeupdate', updateTimer);
       $audio.on('ended', reinit);
+
+      if(callback && typeof callback === 'function') callback();
     },
     findOrCreateAudioElement: function () {
       var audioElm = this.$el.find('audio');
@@ -158,27 +167,27 @@
 
         return $(audio);
       }
-    }    
+    }
   });
 
 
-  /* 
-   * booting all the thing 
-   */
-  
-  /* Create a new TrackList */
+/*
+ * booting all the thing
+ */
+
+  /* Create a new trackList */
   var tracklist = new JB.PlayList(window.tracks),
       playlist = new JB.PlayListView({ /* and associate it to a view */
         collection: tracklist,
         el: '.tracks'
       });
 
-  /* Player Instance */
+  /* Create a player instance */
   var player = new JB.Player({
     el: '.player'
   });
 
-  /* Render all the things */
+  /* and render all the things! */
   playlist.render();
   player.render();
 
